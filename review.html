@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>مراجعة الطلب - مكتب الوسام</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Tahoma, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      margin: 25px auto;
+      padding: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #123b63;
+    }
+
+    .step {
+      text-align: center;
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    .section {
+      border: 1px solid #e1e6eb;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      color: #123b63;
+      font-size: 19px;
+      margin-top: 0;
+    }
+
+    .row {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .row:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .file {
+      background: #f7f9fb;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 8px 0;
+      word-break: break-word;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    button {
+      flex: 1;
+      border: 0;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .back {
+      background: #e5e7eb;
+    }
+
+    .submit {
+      background: #123b63;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    #message {
+      display: none;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    @media(max-width:600px) {
+      .buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+
+    <h1>مراجعة طلب التقديم</h1>
+
+    <div class="step">
+      الخطوة الثالثة: مراجعة البيانات قبل الإرسال
+    </div>
+
+    <div id="content"></div>
+
+    <div id="message"></div>
+
+    <div class="buttons">
+
+      <button class="back" onclick="goBack()">
+        → السابق
+      </button>
+
+      <button
+        class="submit"
+        id="submitBtn"
+        onclick="submitApplication()">
+        إرسال الطلب ✓
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   Supabase
+   ===================================================== */
+
+const SUPABASE_URL =
+  "https://bjiasnxdqxbxobqaovgh.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_E5cMO9MoOnCt7QwUJrRcZw_WwaLK8b6";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+/* =====================================================
+   البيانات القادمة من الصفحات السابقة
+   ===================================================== */
+
+const applicationData =
+  JSON.parse(
+    localStorage.getItem("applicationData")
+  ) || {};
+
+const applicationDocuments =
+  JSON.parse(
+    localStorage.getItem("applicationDocuments")
+  ) || {};
+
+
+/* =====================================================
+   عرض البيانات
+   ===================================================== */
+
+function row(label, value) {
+
+  return `
+    <div class="row">
+
+      <div class="label">
+        ${label}
+      </div>
+
+      <div>
+        ${value || "غير موجود"}
+      </div>
+
+    </div>
+  `;
+}
+
+
+function showData() {
+
+  document.getElementById("content").innerHTML = `
+
+    <div class="section">
+
+      <h2>📚 بيانات التقديم</h2>
+
+      ${row(
+        "الفئة",
+        applicationData.category
+      )}
+
+      ${row(
+        "الدولة",
+        applicationData.country
+      )}
+
+      ${row(
+        "التخصص",
+        applicationData.major
+      )}
+
+    </div>
+
+
+    <div class="section">
+
+      <h2>👤 البيانات الشخصية</h2>
+
+      ${row(
+        "الاسم الكامل",
+        applicationData.name
+      )}
+
+      ${row(
+        "رقم الهاتف",
+        applicationData.phone
+      )}
+
+      ${row(
+        "الجنسية",
+        applicationData.nationality
+      )}
+
+    </div>
+
+
+    <div class="section">
+
+      <h2>📄 المستندات</h2>
+
+      <div class="file">
+        🛂 الجواز:
+        <strong>
+          ${applicationDocuments.passport || "لم يتم اختيار الملف"}
+        </strong>
+      </div>
+
+      <div class="file">
+        🎓 شهادة الثانوية:
+        <strong>
+          ${applicationDocuments.certificate || "لم يتم اختيار الملف"}
+        </strong>
+      </div>
+
+      <div class="file">
+        🎂 شهادة الميلاد:
+        <strong>
+          ${applicationDocuments.birth || "لم يتم اختيار الملف"}
+        </strong>
+      </div>
+
+      <div class="file">
+        🖼️ الصورة الشخصية:
+        <strong>
+          ${applicationDocuments.photo || "لم يتم اختيار الملف"}
+        </strong>
+      </div>
+
+      <div class="file">
+        📝 خطاب الدافع:
+        <strong>
+          ${applicationDocuments.motivation || "لم يتم اختيار الملف"}
+        </strong>
+      </div>
+
+      <div class="file">
+        📑 خطاب التوصية:
+        <strong>
+          ${applicationDocuments.recommendation || "لم يتم اختيار الملف"}
+        </strong>
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+/* =====================================================
+   الرسائل
+   ===================================================== */
+
+function showMessage(text, error = true) {
+
+  const message =
+    document.getElementById("message");
+
+  message.style.display = "block";
+
+  message.textContent = text;
+
+  if (error) {
+
+    message.style.background = "#fee2e2";
+    message.style.color = "#991b1b";
+
+  } else {
+
+    message.style.background = "#dcfce7";
+    message.style.color = "#166534";
+
+  }
+}
+
+
+/* =====================================================
+   الرجوع
+   ===================================================== */
+
+function goBack() {
+
+  window.location.href =
+    "documents.html?v=999";
+
+}
+
+
+/* =====================================================
+   إرسال الطلب إلى Supabase
+   ===================================================== */
+
+async function submitApplication() {
+
+  const button =
+    document.getElementById("submitBtn");
+
+  button.disabled = true;
+
+  button.textContent =
+    "جاري إرسال الطلب...";
+
+  showMessage(
+    "جاري إرسال الطلب إلى النظام...",
+    false
+  );
+
+
+  try {
+
+    /* ---------------------------------------------
+       التحقق من البيانات الأساسية
+       --------------------------------------------- */
+
+    if (
+      !applicationData.category ||
+      !applicationData.country ||
+      !applicationData.major ||
+      !applicationData.name ||
+      !applicationData.phone ||
+      !applicationData.nationality
+    ) {
+
+      throw new Error(
+        "بيانات الطالب غير مكتملة."
+      );
+
+    }
+
+
+    /* ---------------------------------------------
+       التحقق من المستندات الإلزامية
+       --------------------------------------------- */
+
+    if (
+      !applicationDocuments.passport ||
+      !applicationDocuments.certificate
+    ) {
+
+      throw new Error(
+        "الجواز وشهادة الثانوية مطلوبان."
+      );
+
+    }
+
+
+    /* ---------------------------------------------
+       إنشاء رقم الطلب
+       --------------------------------------------- */
+
+    const applicationNumber =
+      "ALW-" +
+      Date.now()
+        .toString()
+        .slice(-8);
+
+
+    /* ---------------------------------------------
+       إرسال الطلب إلى جدول applications
+       --------------------------------------------- */
+
+    const { data, error } =
+      await supabaseClient
+        .from("applications")
+        .insert({
+
+          application_number:
+            applicationNumber,
+
+          full_name:
+            applicationData.name || null,
+
+          phone:
+            applicationData.phone || null,
+
+          nationality:
+            applicationData.nationality || null,
+
+          category:
+            applicationData.category || null,
+
+          country:
+            applicationData.country || null,
+
+          major:
+            applicationData.major || null,
+
+          status:
+            "قيد المراجعة"
+
+        })
+        .select()
+        .single();
+
+
+    /* ---------------------------------------------
+       فحص الخطأ
+       --------------------------------------------- */
+
+    if (error) {
+
+      console.error(
+        "Supabase error:",
+        error
+      );
+
+      throw new Error(
+        error.message ||
+        "تعذر إنشاء الطلب في قاعدة البيانات."
+      );
+
+    }
+
+
+    /* ---------------------------------------------
+       حفظ رقم الطلب محليًا
+       --------------------------------------------- */
+
+    localStorage.setItem(
+      "applicationNumber",
+      applicationNumber
+    );
+
+    localStorage.setItem(
+      "applicationStatus",
+      "قيد المراجعة"
+    );
+
+
+    /* ---------------------------------------------
+       الانتقال إلى صفحة النجاح
+       --------------------------------------------- */
+
+    showMessage(
+      "تم إرسال الطلب بنجاح ✓ جارٍ الانتقال...",
+      false
+    );
+
+
+    setTimeout(function() {
+
+      window.location.href =
+        "success.html?v=999";
+
+    }, 1000);
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    showMessage(
+      "حدث خطأ أثناء إرسال الطلب: " +
+      (error.message || error)
+    );
+
+    button.disabled = false;
+
+    button.textContent =
+      "إرسال الطلب ✓";
+
+  }
+
+}
+
+
+/* =====================================================
+   تشغيل الصفحة
+   ===================================================== */
+
+showData();
+
+</script>
+
+</body>
+</html>
