@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة إدارة الطلبات - مكتب الوسام</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Tahoma, sans-serif;
+    }
+
+    body {
+      background: #f4f6f9;
+      color: #222;
+    }
+
+    header {
+      background: #0d47a1;
+      color: white;
+      padding: 22px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+      font-size: 25px;
+      margin-bottom: 7px;
+    }
+
+    header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1400px;
+      margin: 25px auto;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .stat h2 {
+      font-size: 30px;
+      color: #0d47a1;
+      margin-bottom: 7px;
+    }
+
+    .stat p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .controls {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #0d47a1;
+    }
+
+    .table-box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th {
+      background: #0d47a1;
+      color: white;
+      padding: 14px 10px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 13px 10px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    tr:hover {
+      background: #f8faff;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-new {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .status-review {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-accepted {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-rejected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .details-btn {
+      background: #0d47a1;
+      color: white;
+      border: none;
+      padding: 8px 13px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .details-btn:hover {
+      background: #083378;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-size: 16px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #777;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    /* النافذة */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background: white;
+      width: 95%;
+      max-width: 800px;
+      margin: 30px auto;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.25);
+    }
+
+    .modal-header {
+      background: #0d47a1;
+      color: white;
+      padding: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+    }
+
+    .close {
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .info-item {
+      background: #f7f8fa;
+      padding: 13px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+
+    .info-item strong {
+      display: block;
+      color: #555;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .info-item span {
+      font-size: 14px;
+      color: #222;
+      word-break: break-word;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .modal-actions {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .modal-actions label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .save-btn {
+      margin-top: 10px;
+      width: 100%;
+      background: #198754;
+      color: white;
+      border: none;
+      padding: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .save-btn:hover {
+      background: #146c43;
+    }
+
+    .success-message {
+      display: none;
+      background: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .controls {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+
+      header h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🎓 مكتب الوسام للتقديم والمنح</h1>
+    <p>لوحة إدارة طلبات التقديم</p>
+  </header>
+
+  <div class="container">
+
+    <div id="errorBox" class="error"></div>
+
+    <!-- الإحصائيات -->
+    <div class="stats">
+
+      <div class="stat">
+        <h2 id="totalCount">0</h2>
+        <p>إجمالي الطلبات</p>
+      </div>
+
+      <div class="stat">
+        <h2 id="newCount">0</h2>
+        <p>طلبات جديدة</p>
+      </div>
+
+      <div class="stat">
+        <h2 id="reviewCount">0</h2>
+        <p>قيد المراجعة</p>
+      </div>
+
+      <div class="stat">
+        <h2 id="acceptedCount">0</h2>
+        <p>طلبات مقبولة</p>
+      </div>
+
+    </div>
+
+    <!-- البحث والتصفية -->
+    <div class="controls">
+
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 ابحث بالاسم أو رقم الهاتف..."
+      >
+
+      <select id="statusFilter">
+        <option value="">كل الحالات</option>
+        <option value="جديد">جديد</option>
+        <option value="قيد المراجعة">قيد المراجعة</option>
+        <option value="مقبول">مقبول</option>
+        <option value="مرفوض">مرفوض</option>
+      </select>
+
+      <select id="countryFilter">
+        <option value="">كل الدول</option>
+      </select>
+
+      <select id="majorFilter">
+        <option value="">كل التخصصات</option>
+      </select>
+
+    </div>
+
+    <!-- جدول الطلبات -->
+    <div class="table-box">
+
+      <div id="loading" class="loading">
+        ⏳ جاري تحميل الطلبات...
+      </div>
+
+      <div id="empty" class="empty" style="display:none;">
+        لا توجد طلبات حتى الآن.
+      </div>
+
+      <table id="applicationsTable" style="display:none;">
+
+        <thead>
+          <tr>
+            <th>رقم الطلب</th>
+            <th>اسم الطالب</th>
+            <th>الهاتف</th>
+            <th>الدولة</th>
+            <th>التخصص</th>
+            <th>نوع التقديم</th>
+            <th>الحالة</th>
+            <th>التفاصيل</th>
+          </tr>
+        </thead>
+
+        <tbody id="applicationsBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- نافذة تفاصيل الطلب -->
+  <div id="detailsModal" class="modal">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h2>📄 تفاصيل الطلب</h2>
+        <span class="close" onclick="closeModal()">×</span>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="info-grid">
+
+          <div class="info-item">
+            <strong>رقم الطلب</strong>
+            <span id="detailId">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>تاريخ التقديم</strong>
+            <span id="detailDate">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>الاسم الكامل</strong>
+            <span id="detailName">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>رقم الهاتف</strong>
+            <span id="detailPhone">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>البريد الإلكتروني</strong>
+            <span id="detailEmail">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>نوع التقديم</strong>
+            <span id="detailType">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>الدولة</strong>
+            <span id="detailCountry">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>التخصص</strong>
+            <span id="detailMajor">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>تاريخ الميلاد</strong>
+            <span id="detailBirthDate">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>الجنس</strong>
+            <span id="detailGender">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>الجنسية</strong>
+            <span id="detailNationality">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>المؤهل</strong>
+            <span id="detailQualification">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>المعدل</strong>
+            <span id="detailGrade">-</span>
+          </div>
+
+          <div class="info-item">
+            <strong>النسبة</strong>
+            <span id="detailPercentage">-</span>
+          </div>
+
+          <div class="info-item full">
+            <strong>الملاحظات</strong>
+            <span id="detailNotes">لا توجد ملاحظات</span>
+          </div>
+
+        </div>
+
+        <div class="modal-actions">
+
+          <label for="newStatus">تغيير حالة الطلب:</label>
+
+          <select id="newStatus">
+            <option value="جديد">جديد</option>
+            <option value="قيد المراجعة">قيد المراجعة</option>
+            <option value="مقبول">مقبول</option>
+            <option value="مرفوض">مرفوض</option>
+          </select>
+
+          <button class="save-btn" onclick="updateStatus()">
+            💾 حفظ حالة الطلب
+          </button>
+
+          <div id="successMessage" class="success-message">
+            ✅ تم تحديث حالة الطلب بنجاح
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    // =========================================================
+    // 🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵🔵
+    // 🔵 هنا ضع رابط Supabase
+    // 🔵 Project URL
+    // 🔵 استبدل فقط الكلام الموجود داخل علامات التنصيص
+    // =========================================================
+
+    const SUPABASE_URL = "https://bjiasnxdqxbxobqaovgh.supabase.co/rest/v1/";
+
+
+    // =========================================================
+    // 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢
+    // 🟢 هنا ضع مفتاح Supabase
+    // 🟢 Publishable Key
+    // 🟢 استبدل فقط الكلام الموجود داخل علامات التنصيص
+    // =========================================================
+
+    const SUPABASE_KEY = "sb_publishable_E5cMO9MoOnCt7QwUJrRcZw_WwaLK8b6";
+
+
+    // إنشاء الاتصال مع Supabase
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+
+    let allApplications = [];
+    let selectedApplicationId = null;
+
+
+    // تحميل الطلبات عند فتح الصفحة
+    document.addEventListener("DOMContentLoaded", function () {
+
+      loadApplications();
+
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", applyFilters);
+
+      document
+        .getElementById("statusFilter")
+        .addEventListener("change", applyFilters);
+
+      document
+        .getElementById("countryFilter")
+        .addEventListener("change", applyFilters);
+
+      document
+        .getElementById("majorFilter")
+        .addEventListener("change", applyFilters);
+
+    });
+
+
+    // =========================================================
+    // تحميل الطلبات من Supabase
+    // =========================================================
+
+    async function loadApplications() {
+
+      showLoading();
+
+      const { data, error } = await supabaseClient
+        .from("applications")
+        .select("*")
+        .order("created_at", {
+          ascending: false
+        });
+
+
+      if (error) {
+
+        console.error(error);
+
+        showError(
+          "حدث خطأ أثناء تحميل الطلبات. تأكد من رابط Supabase والمفتاح ومن صلاحيات الجدول."
+        );
+
+        document.getElementById("loading").style.display = "none";
+
+        return;
+      }
+
+
+      allApplications = data || [];
+
+
+      updateStatistics();
+
+      fillFilters();
+
+      displayApplications(allApplications);
+
+    }
+
+
+    // =========================================================
+    // الإحصائيات
+    // =========================================================
+
+    function updateStatistics() {
+
+      const total = allApplications.length;
+
+      const newApplications =
+        allApplications.filter(
+          item => item.status === "جديد"
+        ).length;
+
+      const reviewApplications =
+        allApplications.filter(
+          item => item.status === "قيد المراجعة"
+        ).length;
+
+      const acceptedApplications =
+        allApplications.filter(
+          item => item.status === "مقبول"
+        ).length;
+
+
+      document.getElementById("totalCount").textContent = total;
+
+      document.getElementById("newCount").textContent =
+        newApplications;
+
+      document.getElementById("reviewCount").textContent =
+        reviewApplications;
+
+      document.getElementById("acceptedCount").textContent =
+        acceptedApplications;
+
+    }
+
+
+    // =========================================================
+    // تعبئة قوائم الدول والتخصصات
+    // =========================================================
+
+    function fillFilters() {
+
+      const countryFilter =
+        document.getElementById("countryFilter");
+
+      const majorFilter =
+        document.getElementById("majorFilter");
+
+
+      const countries = [
+        ...new Set(
+          allApplications
+            .map(item => item.country)
+            .filter(Boolean)
+        )
+      ];
+
+
+      const majors = [
+        ...new Set(
+          allApplications
+            .map(item => item.major)
+            .filter(Boolean)
+        )
+      ];
+
+
+      countryFilter.innerHTML =
+        '<option value="">كل الدول</option>';
+
+
+      majorFilter.innerHTML =
+        '<option value="">كل التخصصات</option>';
+
+
+      countries.sort().forEach(country => {
+
+        const option =
+          document.createElement("option");
+
+        option.value = country;
+
+        option.textContent = country;
+
+        countryFilter.appendChild(option);
+
+      });
+
+
+      majors.sort().forEach(major => {
+
+        const option =
+          document.createElement("option");
+
+        option.value = major;
+
+        option.textContent = major;
+
+        majorFilter.appendChild(option);
+
+      });
+
+    }
+
+
+    // =========================================================
+    // البحث والتصفية
+    // =========================================================
+
+    function applyFilters() {
+
+      const search =
+        document
+          .getElementById("searchInput")
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      const status =
+        document.getElementById("statusFilter").value;
+
+
+      const country =
+        document.getElementById("countryFilter").value;
+
+
+      const major =
+        document.getElementById("majorFilter").value;
+
+
+      const filtered =
+        allApplications.filter(item => {
+
+          const name =
+            String(item.full_name || "").toLowerCase();
+
+          const phone =
+            String(item.phone || "").toLowerCase();
+
+          const matchesSearch =
+            !search ||
+            name.includes(search) ||
+            phone.includes(search);
+
+
+          const matchesStatus =
+            !status ||
+            item.status === status;
+
+
+          const matchesCountry =
+            !country ||
+            item.country === country;
+
+
+          const matchesMajor =
+            !major ||
+            item.major === major;
+
+
+          return (
+            matchesSearch &&
+            matchesStatus &&
+            matchesCountry &&
+            matchesMajor
+          );
+
+        });
+
+
+      displayApplications(filtered);
+
+    }
+
+
+    // =========================================================
+    // عرض الطلبات داخل الجدول
+    // =========================================================
+
+    function displayApplications(applications) {
+
+      const loading =
+        document.getElementById("loading");
+
+      const empty =
+        document.getElementById("empty");
+
+      const table =
+        document.getElementById("applicationsTable");
+
+      const body =
+        document.getElementById("applicationsBody");
+
+
+      loading.style.display = "none";
+
+
+      if (!applications.length) {
+
+        table.style.display = "none";
+
+        empty.style.display = "block";
+
+        return;
+
+      }
+
+
+      empty.style.display = "none";
+
+      table.style.display = "table";
+
+      body.innerHTML = "";
+
+
+      applications.forEach(app => {
+
+        const row =
+          document.createElement("tr");
+
+
+        row.innerHTML = `
+
+          <td>#${escapeHtml(app.id)}</td>
+
+          <td>${escapeHtml(app.full_name || "-")}</td>
+
+          <td>${escapeHtml(app.phone || "-")}</td>
+
+          <td>${escapeHtml(app.country || "-")}</td>
+
+          <td>${escapeHtml(app.major || "-")}</td>
+
+          <td>${escapeHtml(app.application_type || "-")}</td>
+
+          <td>
+            <span class="status ${getStatusClass(app.status)}">
+              ${escapeHtml(app.status || "جديد")}
+            </span>
+          </td>
+
+          <td>
+            <button
+              class="details-btn"
+              onclick="openDetails(${app.id})"
+            >
+              👁 التفاصيل
+            </button>
+          </td>
+
+        `;
+
+
+        body.appendChild(row);
+
+      });
+
+    }
+
+
+    // =========================================================
+    // لون حالة الطلب
+    // =========================================================
+
+    function getStatusClass(status) {
+
+      if (status === "جديد") {
+        return "status-new";
+      }
+
+      if (status === "قيد المراجعة") {
+        return "status-review";
+      }
+
+      if (status === "مقبول") {
+        return "status-accepted";
+      }
+
+      if (status === "مرفوض") {
+        return "status-rejected";
+      }
+
+      return "status-new";
+
+    }
+
+
+    // =========================================================
+    // فتح تفاصيل الطلب
+    // =========================================================
+
+    function openDetails(id) {
+
+      const app =
+        allApplications.find(
+          item => Number(item.id) === Number(id)
+        );
+
+
+      if (!app) {
+        return;
+      }
+
+
+      selectedApplicationId = app.id;
+
+
+      document.getElementById("detailId").textContent =
+        app.id || "-";
+
+
+      document.getElementById("detailDate").textContent =
+        formatDate(app.created_at);
+
+
+      document.getElementById("detailName").textContent =
+        app.full_name || "-";
+
+
+      document.getElementById("detailPhone").textContent =
+        app.phone || "-";
+
+
+      document.getElementById("detailEmail").textContent =
+        app.email || "-";
+
+
+      document.getElementById("detailType").textContent =
+        app.application_type || "-";
+
+
+      document.getElementById("detailCountry").textContent =
+        app.country || "-";
+
+
+      document.getElementById("detailMajor").textContent =
+        app.major || "-";
+
+
+      document.getElementById("detailBirthDate").textContent =
+        app.birth_date || "-";
+
+
+      document.getElementById("detailGender").textContent =
+        app.gender || "-";
+
+
+      document.getElementById("detailNationality").textContent =
+        app.nationality || "-";
+
+
+      document.getElementById("detailQualification").textContent =
+        app.qualification || "-";
+
+
+      document.getElementById("detailGrade").textContent =
+        app.grade || "-";
+
+
+      document.getElementById("detailPercentage").textContent =
+        app.percentage || "-";
+
+
+      document.getElementById("detailNotes").textContent =
+        app.notes || "لا توجد ملاحظات";
+
+
+      document.getElementById("newStatus").value =
+        app.status || "جديد";
+
+
+      document.getElementById("successMessage").style.display =
+        "none";
+
+
+      document.getElementById("detailsModal").style.display =
+        "block";
+
+    }
+
+
+    // =========================================================
+    // إغلاق النافذة
+    // =========================================================
+
+    function closeModal() {
+
+      document.getElementById("detailsModal").style.display =
+        "none";
+
+      selectedApplicationId = null;
+
+    }
+
+
+    // إغلاق النافذة عند الضغط خارجها
+    window.addEventListener("click", function(event) {
+
+      const modal =
+        document.getElementById("detailsModal");
+
+      if (event.target === modal) {
+        closeModal();
+      }
+
+    });
+
+
+    // =========================================================
+    // تحديث حالة الطلب
+    // =========================================================
+
+    async function updateStatus() {
+
+      if (!selectedApplicationId) {
+        return;
+      }
+
+
+      const newStatus =
+        document.getElementById("newStatus").value;
+
+
+      const button =
+        document.querySelector(".save-btn");
+
+
+      button.disabled = true;
+
+      button.textContent = "⏳ جاري الحفظ...";
+
+
+      const { error } =
+        await supabaseClient
+          .from("applications")
+          .update({
+            status: newStatus
+          })
+          .eq("id", selectedApplicationId);
+
+
+      if (error) {
+
+        console.error(error);
+
+        showError(
+          "حدث خطأ أثناء تحديث حالة الطلب."
+        );
+
+        button.disabled = false;
+
+        button.textContent =
+          "💾 حفظ حالة الطلب";
+
+        return;
+
+      }
+
+
+      // تحديث البيانات محليًا
+      const index =
+        allApplications.findIndex(
+          item =>
+            Number(item.id) ===
+            Number(selectedApplicationId)
+        );
+
+
+      if (index !== -1) {
+
+        allApplications[index].status =
+          newStatus;
+
+      }
+
+
+      updateStatistics();
+
+      applyFilters();
+
+
+      document.getElementById("successMessage").style.display =
+        "block";
+
+
+      button.disabled = false;
+
+      button.textContent =
+        "💾 حفظ حالة الطلب";
+
+
+      setTimeout(function() {
+
+        document.getElementById("successMessage").style.display =
+          "none";
+
+      }, 2500);
+
+    }
+
+
+    // =========================================================
+    // تنسيق التاريخ
+    // =========================================================
+
+    function formatDate(date) {
+
+      if (!date) {
+        return "-";
+      }
+
+
+      try {
+
+        return new Date(date).toLocaleString("ar");
+
+      } catch (error) {
+
+        return date;
+
+      }
+
+    }
+
+
+    // =========================================================
+    // حماية النصوص
+    // =========================================================
+
+    function escapeHtml(value) {
+
+      const div =
+        document.createElement("div");
+
+      div.textContent =
+        String(value ?? "");
+
+      return div.innerHTML;
+
+    }
+
+
+    // =========================================================
+    // شاشة التحميل
+    // =========================================================
+
+    function showLoading() {
+
+      document.getElementById("loading").style.display =
+        "block";
+
+      document.getElementById("empty").style.display =
+        "none";
+
+      document.getElementById("applicationsTable").style.display =
+        "none";
+
+    }
+
+
+    // =========================================================
+    // رسالة الخطأ
+    // =========================================================
+
+    function showError(message) {
+
+      const box =
+        document.getElementById("errorBox");
+
+      box.textContent = message;
+
+      box.style.display = "block";
+
+    }
+
+  </script>
+
+</body>
+</html>
