@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>التقديم - مكتب الوسام</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 650px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 3px 15px #ccc;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1d4f91;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      font-weight: bold;
+    }
+
+    select,
+    input {
+      width: 100%;
+      max-width: 100%;
+      padding: 13px;
+      margin-top: 7px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      background: white;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px;
+      background: #1d4f91;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    .previous {
+      background: #777;
+    }
+
+    .note {
+      background: #eef4fb;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 500px) {
+      body {
+        padding: 10px;
+      }
+
+      .box {
+        margin: 15px auto;
+        padding: 18px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h1>🎓 مكتب الوسام</h1>
+
+  <h2>الخطوة الأولى: بيانات التقديم</h2>
+
+  <div class="note">
+    اختر نوع التقديم والدولة والتخصص، ثم أدخل بياناتك الشخصية.
+  </div>
+
+  <label>نوع التقديم</label>
+
+  <select id="category">
+    <option value="">اختر نوع التقديم</option>
+    <option value="المنح الجامعية">المنح الجامعية</option>
+    <option value="الجامعات الحكومية">الجامعات الحكومية</option>
+    <option value="الجامعات الخاصة">الجامعات الخاصة</option>
+  </select>
+
+
+  <label>الدولة</label>
+
+  <select id="country">
+    <option value="">اختر الدولة</option>
+    <option value="السعودية">السعودية</option>
+    <option value="مصر">مصر</option>
+    <option value="الصين">الصين</option>
+    <option value="تركيا">تركيا</option>
+  </select>
+
+
+  <label>التخصص</label>
+
+  <select id="major">
+
+    <option value="">اختر التخصص</option>
+
+    <optgroup label="الطب والصحة">
+      <option>الطب البشري</option>
+      <option>طب الأسنان</option>
+      <option>الصيدلة</option>
+      <option>التمريض</option>
+      <option>العلاج الطبيعي</option>
+      <option>العلاج الوظيفي</option>
+      <option>المختبرات الطبية</option>
+      <option>الأشعة والتصوير الطبي</option>
+      <option>التغذية العلاجية</option>
+      <option>الصحة العامة</option>
+      <option>الإسعاف والطوارئ</option>
+      <option>البصريات</option>
+      <option>العلوم الطبية التطبيقية</option>
+    </optgroup>
+
+    <optgroup label="الهندسة">
+      <option>الهندسة المدنية</option>
+      <option>الهندسة المعمارية</option>
+      <option>الهندسة الكهربائية</option>
+      <option>الهندسة الميكانيكية</option>
+      <option>الهندسة الصناعية</option>
+      <option>الهندسة الكيميائية</option>
+      <option>هندسة البترول</option>
+      <option>هندسة الطاقة</option>
+      <option>هندسة الطيران</option>
+      <option>هندسة الاتصالات</option>
+      <option>هندسة الروبوتات</option>
+      <option>الهندسة البيئية</option>
+    </optgroup>
+
+    <optgroup label="الحاسب وتقنية المعلومات">
+      <option>علوم الحاسوب</option>
+      <option>تقنية المعلومات</option>
+      <option>هندسة البرمجيات</option>
+      <option>نظم المعلومات</option>
+      <option>الذكاء الاصطناعي</option>
+      <option>علم البيانات</option>
+      <option>الأمن السيبراني</option>
+      <option>هندسة الحاسوب</option>
+      <option>الشبكات</option>
+    </optgroup>
+
+    <optgroup label="إدارة واقتصاد">
+      <option>إدارة الأعمال</option>
+      <option>المحاسبة</option>
+      <option>الاقتصاد</option>
+      <option>التمويل</option>
+      <option>التسويق</option>
+      <option>إدارة الموارد البشرية</option>
+      <option>إدارة المشاريع</option>
+      <option>ريادة الأعمال</option>
+    </optgroup>
+
+    <optgroup label="القانون والعلوم السياسية">
+      <option>القانون</option>
+      <option>الحقوق</option>
+      <option>العلوم السياسية</option>
+      <option>العلاقات الدولية</option>
+    </optgroup>
+
+    <optgroup label="التربية والعلوم الإنسانية">
+      <option>التربية</option>
+      <option>اللغة العربية</option>
+      <option>اللغة الإنجليزية</option>
+      <option>الترجمة</option>
+      <option>علم النفس</option>
+      <option>علم الاجتماع</option>
+      <option>التاريخ</option>
+      <option>الجغرافيا</option>
+      <option>التربية الخاصة</option>
+    </optgroup>
+
+    <optgroup label="الإعلام والفنون">
+      <option>الإعلام</option>
+      <option>الصحافة</option>
+      <option>العلاقات العامة</option>
+      <option>التصميم الجرافيكي</option>
+      <option>التصميم الداخلي</option>
+      <option>الفنون الجميلة</option>
+      <option>التصوير الفوتوغرافي</option>
+    </optgroup>
+
+    <optgroup label="العلوم">
+      <option>الرياضيات</option>
+      <option>الفيزياء</option>
+      <option>الكيمياء</option>
+      <option>الأحياء</option>
+      <option>العلوم البيئية</option>
+      <option>الجيولوجيا</option>
+    </optgroup>
+
+    <optgroup label="الزراعة والبيئة">
+      <option>العلوم الزراعية</option>
+      <option>الهندسة الزراعية</option>
+      <option>علوم الأغذية</option>
+      <option>الطب البيطري</option>
+      <option>علوم البيئة</option>
+    </optgroup>
+
+    <optgroup label="السياحة والخدمات">
+      <option>السياحة</option>
+      <option>إدارة الفنادق</option>
+      <option>إدارة الضيافة</option>
+      <option>إدارة الفعاليات</option>
+      <option>الطيران</option>
+    </optgroup>
+
+    <option value="أخرى">أخرى</option>
+
+  </select>
+
+
+  <label>الاسم الكامل</label>
+  <input type="text" id="name" placeholder="اكتب الاسم الكامل">
+
+
+  <label>رقم الهاتف</label>
+  <input type="tel" id="phone" placeholder="اكتب رقم الهاتف">
+
+
+  <label>الجنسية</label>
+  <input type="text" id="nationality" placeholder="اكتب الجنسية">
+
+
+  <div class="buttons">
+
+    <button
+      class="previous"
+      onclick="location.href='index.html'">
+      → السابق
+    </button>
+
+    <button onclick="nextStep()">
+      التالي ←
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+function nextStep() {
+
+  const category =
+    document.getElementById("category").value;
+
+  const country =
+    document.getElementById("country").value;
+
+  const major =
+    document.getElementById("major").value;
+
+  const name =
+    document.getElementById("name").value.trim();
+
+  const phone =
+    document.getElementById("phone").value.trim();
+
+  const nationality =
+    document.getElementById("nationality").value.trim();
+
+
+  if (
+    !category ||
+    !country ||
+    !major ||
+    !name ||
+    !phone ||
+    !nationality
+  ) {
+
+    alert("❌ يرجى إكمال جميع البيانات");
+
+    return;
+  }
+
+
+  localStorage.setItem(
+    "applicationData",
+
+    JSON.stringify({
+
+      category: category,
+      country: country,
+      major: major,
+      name: name,
+      phone: phone,
+      nationality: nationality
+
+    })
+  );
+
+
+  window.location.href = "documents.html";
+}
+
+</script>
+
+</body>
+</html>
